@@ -6,6 +6,7 @@ interface AdvantagesSectionProps {
   isDarkMode: boolean;
 }
 
+
 export const AdvantagesSection: React.FC<AdvantagesSectionProps> = ({
   content,
   isDarkMode

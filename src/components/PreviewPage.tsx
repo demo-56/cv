@@ -509,7 +509,7 @@ export const PreviewPage: React.FC = () => {
   useEffect(() => {
     const downloadResumes = async () => {
       try {
-        const API_BASE_URL = "https://8a514a18a875.ngrok-free.app"
+        const API_BASE_URL = "https:/5d13c77aa678.ngrok-free.app"
 
         // Download Classic Resume
         const classicResponse = await axios.get(
@@ -584,7 +584,7 @@ export const PreviewPage: React.FC = () => {
     const fetchImages = async () => {
       try {
         const filename = activePreview === 'classic' ? state.classicResumeUrl : state.modernResumeUrl;
-        const API_BASE_URL = "https://8a514a18a875.ngrok-free.app/images";
+        const API_BASE_URL = "https://5d13c77aa678.ngrok-free.app/images";
         const response = await axios.post(
           API_BASE_URL,
           {

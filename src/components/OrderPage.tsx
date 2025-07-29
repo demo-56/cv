@@ -133,7 +133,7 @@ export const OrderPage: React.FC = () => {
   };
 
   const generateCoverLetter = async (): Promise<UploadResponse> => {
-    const API_BASE_URL = 'https://8a514a18a875.ngrok-free.app';
+    const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app';
     
     const formDataToSend = new FormData();
     const file = uploadedFiles[0];
@@ -173,7 +173,7 @@ export const OrderPage: React.FC = () => {
   };
 
   const generateResume = async (): Promise<UploadResponse> => {
-    const API_BASE_URL = 'https://8a514a18a875.ngrok-free.app';
+    const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app';
     
     // Health check first
     await axios.get(`${API_BASE_URL}/health-check`, {

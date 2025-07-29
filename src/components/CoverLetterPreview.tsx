@@ -202,7 +202,7 @@ export function CoverLetterPreview() {
       setMobileImageLoading(true);
       const fetchMobileImage = async () => {
         try {
-          const API_BASE_URL = 'https://13393172fc91.ngrok-free.app/images';
+          const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app/images';
           const response = await axios.post(
             API_BASE_URL,
             {
@@ -278,7 +278,7 @@ export function CoverLetterPreview() {
         setIsLoading(true);
         setError('');
         
-        const API_BASE_URL = 'https://13393172fc91.ngrok-free.app/download';
+        const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app/download';
         
         // Encode the filename to handle special characters
         const encodedFilename = encodeURIComponent(state.cover_letter_filename);

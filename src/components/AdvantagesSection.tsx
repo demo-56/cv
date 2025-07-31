@@ -10,6 +10,7 @@ interface AdvantagesSectionProps {
 export const AdvantagesSection: React.FC<AdvantagesSectionProps> = ({
   content,
   isDarkMode
+  
 }) => {
   return (
     <section className="py-16 px-4">

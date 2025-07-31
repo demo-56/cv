@@ -548,13 +548,13 @@ export function CoverLetterPreview() {
                       </p>
                     </div>
                   ) : mobileImageUrls.length > 0 ? (
-                    <div className="flex flex-col gap-6 items-center">
+                    <div className="flex flex-col gap-4 items-center">
                       {mobileImageUrls.map((imgUrl, idx) => (
                         <img
                           key={idx}
                           src={imgUrl}
                           alt={`Cover Letter Preview ${idx + 1}`}
-                          className="w-full h-auto max-h-[90vh] object-contain rounded mb-4 mt-10 cursor-pointer"
+                          className="w-full h-auto max-h-[90vh] object-fill  rounded-lg cursor-pointer"
                           onClick={() => setFullScreenImg(imgUrl)}
                         />
                       ))}

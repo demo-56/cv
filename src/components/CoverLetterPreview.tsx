@@ -189,20 +189,22 @@ export function CoverLetterPreview() {
   const [isPaid, setIsPaid] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
-  const [mobileImageUrl, setMobileImageUrl] = useState<string | null>(null);
+  const [mobileImageUrls, setMobileImageUrls] = useState<string[]>([]);
   const [mobileImageLoading, setMobileImageLoading] = useState(false);
+  // Full screen image modal state
+  const [fullScreenImg, setFullScreenImg] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMobile(isMobileDevice());
   }, []);
 
-  // Fetch image for mobile preview
+  // Fetch image for preview (both desktop and mobile)
   useEffect(() => {
-    if (isMobile && state?.session_id && state?.cover_letter_filename) {
+    if (state?.session_id && state?.cover_letter_filename) {
       setMobileImageLoading(true);
-      const fetchMobileImage = async () => {
+      const fetchImage = async () => {
         try {
-          const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app/images';
+          const API_BASE_URL = 'https://a240540ec581.ngrok-free.app/images';
           const response = await axios.post(
             API_BASE_URL,
             {
@@ -224,22 +226,22 @@ export function CoverLetterPreview() {
             images = response.data.images;
           }
           if (images && images.length > 0) {
-            setMobileImageUrl(images[0]);
+            setMobileImageUrls(images);
           } else {
-            setMobileImageUrl(null);
+            setMobileImageUrls([]);
           }
         } catch (error) {
-          setMobileImageUrl(null);
+          setMobileImageUrls([]);
         } finally {
           setMobileImageLoading(false);
         }
       };
-      fetchMobileImage();
+      fetchImage();
     } else {
-      setMobileImageUrl(null);
+      setMobileImageUrls([]);
       setMobileImageLoading(false);
     }
-  }, [isMobile, state]);
+  }, [state]);
 
   useEffect(() => {
     if (!state || !state.session_id || !state.cover_letter_filename) {
@@ -278,7 +280,7 @@ export function CoverLetterPreview() {
         setIsLoading(true);
         setError('');
         
-        const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app/download';
+        const API_BASE_URL = 'https://a240540ec581.ngrok-free.app/download';
         
         // Encode the filename to handle special characters
         const encodedFilename = encodeURIComponent(state.cover_letter_filename);
@@ -474,6 +476,8 @@ export function CoverLetterPreview() {
                 isDarkMode ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'
               }`}
             >
+              
+              
               <AlertCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-red-500" />
               <h3 className="text-lg md:text-xl font-semibold mb-2 text-red-600">
                 {String(language) === 'ar' ? 'حدث خطأ' : 'Error Occurred'}
@@ -503,9 +507,9 @@ export function CoverLetterPreview() {
           </div>
         )}
 
-        {/* PDF Preview */}
+        {/* Image Preview (shown on both desktop and mobile) */}
         {pdfUrl && !isLoading && !error && (
-          <div className="w-full max-w-4xl mx-auto">
+          <div className="w-full max-w-xl mx-auto">
             <div
               className={`rounded-2xl overflow-hidden ${
                 isDarkMode
@@ -513,61 +517,71 @@ export function CoverLetterPreview() {
                   : 'bg-white border border-gray-200 shadow-lg'
               }`}
             >
-           <div className="p-4 md:p-6 pb-4">
-  <div className="flex sm:flex-row flex-col justify-between items-center gap-4 mb-4">
-    <div className="flex items-center gap-3">
-      <FileText className="w-5 h-5 md:w-6 md:h-6" />
-      <h2 className="text-xl md:text-2xl font-bold">
-        {String(language) === 'ar' ? 'خطاب التغطية' : 'Cover Letter'}
-      </h2>
-    </div>
-    <button
-      onClick={downloadPdf}
-      className="px-6 py-2 rounded-full bg-black text-white font-semibold shadow-lg opacity-90 hover:opacity-100 transition-all"
-      style={{ minWidth: '120px' }}
-    >
-      {String(language) === 'ar' ? 'تحميل الملف' : 'Download File'}
-    </button>
-  </div>
-</div>
-              <div className="px-4 md:px-6 pb-4 md:pb-6">
-                {isMobile ? (
-                  // Mobile-specific image preview with download button overlay
-                  <div className={`relative w-full p-8 rounded-xl border-2 text-center transition-all duration-300 ${
-                    isDarkMode
-                      ? 'border-gray-700 hover:border-gray-600 bg-gray-800/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-gray-50'
-                  }`}>
-                    {mobileImageLoading ? (
-                      <div className="flex flex-col items-center justify-center min-h-[200px]">
-                        <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {String(language) === 'ar' ? 'جاري تحميل المعاينة...' : 'Loading preview...'}
-                        </p>
-                      </div>
-                    ) : mobileImageUrl ? (
-                      <>
-                        {/* Download button overlay */}
-                       
-                        <img src={mobileImageUrl} alt="Cover Letter Preview" className="w-full h-auto max-h-[60vh] object-contain rounded mb-4 mt-10" />
-                        
-                      </>
-                    ) : null}
+              <div className="p-4 md:p-6 pb-4">
+                <div className="flex sm:flex-row flex-col justify-between items-center w-full gap-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 md:w-6 md:h-6" />
+                    <h2 className="text-xl md:text-2xl font-bold">
+                      {String(language) === 'ar' ? 'خطاب التغطية' : 'Cover Letter'}
+                    </h2>
                   </div>
-                ) : (
-                  // Desktop iframe viewer
-                  <div
-                    className={`w-full h-[600px] md:h-[800px] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
-                      isDarkMode
-                        ? 'border-gray-700 hover:border-gray-600'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                  <button
+                    onClick={downloadPdf}
+                    className="px-6 py-2 rounded-full bg-black text-white font-semibold shadow-lg opacity-90 hover:opacity-100 transition-all"
+                    style={{ minWidth: '120px' }}
                   >
-                    <iframe 
-                      src={pdfUrl} 
-                      className="w-full h-full border-0" 
-                      loading="lazy"
+                    {String(language) === 'ar' ? 'تحميل الملف' : 'Download File'}
+                  </button>
+                </div>
+              </div>
+              <div className="px-4 md:px-6 pb-4 md:pb-6">
+                <div className={`relative w-full p-8 rounded-xl border-2 text-center transition-all duration-300 ${
+                  isDarkMode
+                    ? 'border-gray-700 hover:border-gray-600 bg-gray-800/50'
+                    : 'border-gray-200 hover:border-gray-300 bg-gray-50'
+                }`}>
+                  {mobileImageLoading ? (
+                    <div className="flex flex-col items-center justify-center min-h-[200px]">
+                      <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {String(language) === 'ar' ? 'جاري تحميل المعاينة...' : 'Loading preview...'}
+                      </p>
+                    </div>
+                  ) : mobileImageUrls.length > 0 ? (
+                    <div className="flex flex-col gap-6 items-center">
+                      {mobileImageUrls.map((imgUrl, idx) => (
+                        <img
+                          key={idx}
+                          src={imgUrl}
+                          alt={`Cover Letter Preview ${idx + 1}`}
+                          className="w-full h-auto max-h-[90vh] object-contain rounded mb-4 mt-10 cursor-pointer"
+                          onClick={() => setFullScreenImg(imgUrl)}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                {/* Full Screen Image Modal */}
+                {fullScreenImg && (
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm"
+                    onClick={() => setFullScreenImg(null)}
+                  >
+                    <img
+                      src={fullScreenImg}
+                      alt="Full Screen Cover Letter Preview"
+                      className="max-w-full max-h-full object-contain rounded shadow-2xl"
+                      style={{ boxShadow: '0 0 40px 8px rgba(0,0,0,0.7)' }}
+                      onClick={e => e.stopPropagation()}
                     />
+                    <button
+                      className="absolute top-4 right-4 p-2 rounded-full bg-black bg-opacity-60 hover:bg-opacity-80 text-white"
+                      onClick={() => setFullScreenImg(null)}
+                      aria-label="Close full screen preview"
+                      style={{ zIndex: 60 }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                   </div>
                 )}
               </div>

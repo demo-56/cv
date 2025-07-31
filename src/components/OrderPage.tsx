@@ -9,6 +9,7 @@ import { Footer } from './Footer';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { content } from '../data/content';
+import ScrollToTop from '../components/ScrollToTop';
 
 interface UploadResponse {
   session_id: string;
@@ -133,7 +134,7 @@ export const OrderPage: React.FC = () => {
   };
 
   const generateCoverLetter = async (): Promise<UploadResponse> => {
-    const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app';
+    const API_BASE_URL = 'https://a240540ec581.ngrok-free.app';
     
     const formDataToSend = new FormData();
     const file = uploadedFiles[0];
@@ -173,7 +174,7 @@ export const OrderPage: React.FC = () => {
   };
 
   const generateResume = async (): Promise<UploadResponse> => {
-    const API_BASE_URL = 'https://5d13c77aa678.ngrok-free.app';
+    const API_BASE_URL = 'https://a240540ec581.ngrok-free.app';
     
     // Health check first
     await axios.get(`${API_BASE_URL}/health-check`, {
@@ -311,6 +312,7 @@ export const OrderPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
+      <ScrollToTop />
       <Header
         isDarkMode={isDarkMode}
         language={language}

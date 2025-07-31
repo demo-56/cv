@@ -343,6 +343,8 @@ export const PreviewPage: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useTheme()
   const { language, toggleLanguage } = useLanguage()
   const [classicPdfUrl, setClassicPdfUrl] = useState<string>("")
+  // Mobile screenshot/recording overlay state
+  const [showMobileOverlay, setShowMobileOverlay] = useState(false)
   const [modernPdfUrl, setModernPdfUrl] = useState<string>("")
   const [activePreview, setActivePreview] = useState<"classic" | "modern">("classic")
   
@@ -353,14 +355,30 @@ export const PreviewPage: React.FC = () => {
 
   // Mobile image preview state
   const [isMobile, setIsMobile] = useState(false)
-  const [mobileImages, setMobileImages] = useState<string[] | null>(null)
-  const [mobileImageLoading, setMobileImageLoading] = useState(false)
-  const [mobileImageError, setMobileImageError] = useState<string>("")
+  const [previewImages, setPreviewImages] = useState<string[] | null>(null)
+  const [previewImageLoading, setPreviewImageLoading] = useState(false)
+  const [previewImageError, setPreviewImageError] = useState<string>("")
   // Full screen image modal state
   const [fullScreenImg, setFullScreenImg] = useState<string | null>(null)
   // Detect mobile on mount
   useEffect(() => {
     setIsMobile(isMobileDevice());
+    // Only on mobile: show overlay when page loses focus
+    if (isMobileDevice()) {
+      const handleBlur = () => setShowMobileOverlay(true);
+      const handleFocus = () => setShowMobileOverlay(false);
+      window.addEventListener('blur', handleBlur);
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) setShowMobileOverlay(true);
+        else setShowMobileOverlay(false);
+      });
+      return () => {
+        window.removeEventListener('blur', handleBlur);
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', () => {});
+      };
+    }
   }, []);
 
   // Screenshot and Screen Recording Protection
@@ -509,7 +527,7 @@ export const PreviewPage: React.FC = () => {
   useEffect(() => {
     const downloadResumes = async () => {
       try {
-        const API_BASE_URL = "https:/5d13c77aa678.ngrok-free.app"
+        const API_BASE_URL = "https://a240540ec581.ngrok-free.app"
 
         // Download Classic Resume
         const classicResponse = await axios.get(
@@ -573,18 +591,17 @@ export const PreviewPage: React.FC = () => {
     document.body.removeChild(link)
   }
 
-  // Fetch preview images for mobile automatically when activePreview or isMobile changes
+  // Fetch preview images for both desktop and mobile automatically when activePreview changes
   // Move fetchImages to a ref so it can be called from retry button
   const fetchImagesRef = React.useRef<() => void>(() => {});
   useEffect(() => {
-    if (!isMobile) return;
-    setMobileImageError("");
-    setMobileImageLoading(true);
-    setMobileImages(null);
+    setPreviewImageError("");
+    setPreviewImageLoading(true);
+    setPreviewImages(null);
     const fetchImages = async () => {
       try {
         const filename = activePreview === 'classic' ? state.classicResumeUrl : state.modernResumeUrl;
-        const API_BASE_URL = "https://5d13c77aa678.ngrok-free.app/images";
+        const API_BASE_URL = "https://a240540ec581.ngrok-free.app/images";
         const response = await axios.post(
           API_BASE_URL,
           {
@@ -603,8 +620,8 @@ export const PreviewPage: React.FC = () => {
         // Debug: log the response
         console.log('DEBUG /images API response:', response.data);
         if (response.status === 404 || (response.data && response.data.detail && response.data.detail.includes('not found'))) {
-          setMobileImages([]);
-          setMobileImageError(String(language) === 'ar' ? 'ملف السيرة الذاتية غير موجود للمعاينة' : 'Resume file not found for preview');
+          setPreviewImages([]);
+          setPreviewImageError(String(language) === 'ar' ? 'ملف السيرة الذاتية غير موجود للمعاينة' : 'Resume file not found for preview');
           return;
         }
         let images: string[] | undefined;
@@ -620,26 +637,26 @@ export const PreviewPage: React.FC = () => {
           if (arr) images = arr as string[];
         }
         if (images && images.length > 0) {
-          setMobileImages(images);
+          setPreviewImages(images);
         } else {
-          setMobileImages([]);
-          setMobileImageError(
+          setPreviewImages([]);
+          setPreviewImageError(
             (String(language) === 'ar' ? 'لم يتم العثور على صور المعاينة' : 'No preview images found')
           );
         }
       } catch (error) {
-        setMobileImages([]);
-        setMobileImageError(
+        setPreviewImages([]);
+        setPreviewImageError(
           (String(language) === 'ar' ? 'حدث خطأ أثناء تحميل الصور' : 'Error loading images')
         );
       } finally {
-        setMobileImageLoading(false);
+        setPreviewImageLoading(false);
       }
     };
     fetchImagesRef.current = fetchImages;
     fetchImages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePreview, isMobile, language, state.classicResumeUrl, state.modernResumeUrl, state.sessionId]);
+  }, [activePreview, language, state.classicResumeUrl, state.modernResumeUrl, state.sessionId]);
 
 
   // On both desktop and mobile, show payment modal before download
@@ -691,6 +708,18 @@ export const PreviewPage: React.FC = () => {
         toggleLanguage={toggleLanguage}
       />
 
+      {/* Mobile Screenshot/Recording Overlay */}
+      {isMobile && showMobileOverlay && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-lg">
+          <div className="text-center text-white p-8 rounded-2xl bg-black bg-opacity-70 border-2 border-red-600 shadow-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4 h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <h2 className="text-2xl font-bold mb-2">{String(language) === 'ar' ? 'تم تعطيل المعاينة مؤقتًا' : 'Preview Disabled'}</h2>
+            <p className="text-lg mb-2">{String(language) === 'ar' ? 'لا يمكن التقاط لقطة شاشة أو تسجيل الشاشة لهذا المحتوى.' : 'Screenshot and screen recording are not allowed for this content.'}</p>
+            <p className="text-sm opacity-80">{String(language) === 'ar' ? 'يرجى العودة إلى التطبيق لمتابعة المعاينة.' : 'Please return to the app to continue previewing.'}</p>
+          </div>
+        </div>
+      )}
+
       <main className="container mx-auto px-4 py-12">
         {/* Back Button */}
         <div className="mt-10">
@@ -720,9 +749,9 @@ export const PreviewPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Desktop View - Side by Side */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-8">
-          {/* Classic Resume */}
+        {/* Desktop & Mobile View - Show Images Instead of PDF */}
+        <div className="hidden lg:grid lg:grid-cols-2  gap-20 w-[80%] mx-auto">
+          {/* Classic Resume Images */}
           <div
             className={`group relative rounded-2xl overflow-hidden transition-all duration-300 ${
               isDarkMode
@@ -755,24 +784,54 @@ export const PreviewPage: React.FC = () => {
               </p>
             </div>
             <div className="px-6 pb-6">
-              <div
-                className={`w-full h-[700px] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
-                  isDarkMode
-                    ? "border-gray-700 group-hover:border-gray-600"
-                    : "border-gray-200 group-hover:border-gray-300"
-                }`}
-              >
-                <iframe 
-                  src={classicPdfUrl} 
-                  className="w-full h-full border-0" 
-                  title="Classic Resume"
-                  style={{ pointerEvents: 'none', userSelect: 'none' }}
-                />
+              <div className={`w-full min-h-[300px] rounded-xl overflow-hidden border-2 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+                {/* Show loading, error, or images for classic */}
+                {previewImageLoading ? (
+                  <div className="flex flex-col items-center justify-center min-h-[200px]">
+                    <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {String(language) === 'ar' ? 'جاري تحميل المعاينة...' : 'Loading preview...'}
+                    </p>
+                  </div>
+                ) : previewImageError ? (
+                  <div className="flex flex-col items-center justify-center min-h-[200px]">
+                    <AlertCircle className="w-10 h-10 text-red-500 mb-2" />
+                    <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>{previewImageError}</p>
+                    <button
+                      onClick={() => {
+                        setPreviewImageError("");
+                        setPreviewImageLoading(true);
+                        setTimeout(() => fetchImagesRef.current(), 100);
+                      }}
+                      className={`mt-4 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`}
+                    >
+                      {String(language) === 'ar' ? 'إعادة المحاولة' : 'Try Again'}
+                    </button>
+                  </div>
+                ) : previewImages && previewImages.length > 0 ? (
+                  <div className="flex flex-col gap-4 items-center justify-center py-4">
+                    {previewImages.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt="Resume Preview"
+                        className="w-full h-auto md:max-h-[80vh] max-h-[60vh] object-contain rounded cursor-zoom-in"
+                        onClick={() => setFullScreenImg(img)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center min-h-[200px]">
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {String(language) === 'ar' ? 'اضغط تحميل لعرض المعاينة' : 'Press Download to preview'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Modern Resume */}
+          {/* Modern Resume Images */}
           <div
             className={`group relative rounded-2xl overflow-hidden transition-all duration-300 ${
               isDarkMode
@@ -803,19 +862,49 @@ export const PreviewPage: React.FC = () => {
               </p>
             </div>
             <div className="px-6 pb-6">
-              <div
-                className={`w-full h-[700px] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
-                  isDarkMode
-                    ? "border-gray-700 group-hover:border-gray-600"
-                    : "border-gray-200 group-hover:border-gray-300"
-                }`}
-              >
-                <iframe 
-                  src={modernPdfUrl} 
-                  className="w-full h-full border-0" 
-                  title="Modern Resume"
-                  style={{ pointerEvents: 'none', userSelect: 'none' }}
-                />
+              <div className={`w-full min-h-[300px] rounded-xl overflow-hidden border-2 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+                {/* Show loading, error, or images for modern */}
+                {previewImageLoading ? (
+                  <div className="flex flex-col items-center justify-center min-h-[200px]">
+                    <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {String(language) === 'ar' ? 'جاري تحميل المعاينة...' : 'Loading preview...'}
+                    </p>
+                  </div>
+                ) : previewImageError ? (
+                  <div className="flex flex-col items-center justify-center min-h-[200px]">
+                    <AlertCircle className="w-10 h-10 text-red-500 mb-2" />
+                    <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>{previewImageError}</p>
+                    <button
+                      onClick={() => {
+                        setPreviewImageError("");
+                        setPreviewImageLoading(true);
+                        setTimeout(() => fetchImagesRef.current(), 100);
+                      }}
+                      className={`mt-4 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`}
+                    >
+                      {String(language) === 'ar' ? 'إعادة المحاولة' : 'Try Again'}
+                    </button>
+                  </div>
+                ) : previewImages && previewImages.length > 0 ? (
+                  <div className="flex flex-col gap-4 items-center justify-center py-4">
+                    {previewImages.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt="Resume Preview"
+                        className="w-full h-auto md:max-h-[80vh] max-h-[60vh] object-contain rounded cursor-zoom-in"
+                        onClick={() => setFullScreenImg(img)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center min-h-[200px]">
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {String(language) === 'ar' ? 'اضغط تحميل لعرض المعاينة' : 'Press Download to preview'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -893,21 +982,21 @@ export const PreviewPage: React.FC = () => {
             <div className="px-6 pb-6">
               <div className={`w-full min-h-[300px] rounded-xl overflow-hidden border-2 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
                 {/* Show loading, error, or images */}
-                {mobileImageLoading ? (
+                {previewImageLoading ? (
                   <div className="flex flex-col items-center justify-center min-h-[200px]">
                     <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
                     <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {String(language) === 'ar' ? 'جاري تحميل المعاينة...' : 'Loading preview...'}
                     </p>
                   </div>
-                ) : mobileImageError ? (
+                ) : previewImageError ? (
                   <div className="flex flex-col items-center justify-center min-h-[200px]">
                     <AlertCircle className="w-10 h-10 text-red-500 mb-2" />
-                    <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>{mobileImageError}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>{previewImageError}</p>
                     <button
                       onClick={() => {
-                        setMobileImageError("");
-                        setMobileImageLoading(true);
+                        setPreviewImageError("");
+                        setPreviewImageLoading(true);
                         setTimeout(() => fetchImagesRef.current(), 100);
                       }}
                       className={`mt-4 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`}
@@ -915,9 +1004,9 @@ export const PreviewPage: React.FC = () => {
                       {String(language) === 'ar' ? 'إعادة المحاولة' : 'Try Again'}
                     </button>
                   </div>
-                ) : mobileImages && mobileImages.length > 0 ? (
+                ) : previewImages && previewImages.length > 0 ? (
                   <div className="flex flex-col gap-4 items-center justify-center py-4">
-                    {mobileImages.map((img, idx) => (
+                    {previewImages.map((img: string, idx: number) => (
                       <img
                         key={idx}
                         src={img}

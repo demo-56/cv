@@ -7,6 +7,7 @@ import { Footer } from './Footer';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Loader2, Download, Eye, ArrowLeft, FileText, AlertCircle, Smartphone, Monitor, ExternalLink } from 'lucide-react';
+import ScrollToTop from '../components/ScrollToTop';
 
 interface LocationState {
   session_id: string;
@@ -401,6 +402,7 @@ export function CoverLetterPreview() {
           : 'bg-gradient-to-br from-white via-gray-50 to-white text-black'
       }`}
     >
+      <ScrollToTop />
       <Header
         isDarkMode={isDarkMode}
         language={String(language)}

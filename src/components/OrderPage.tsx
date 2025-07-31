@@ -9,6 +9,7 @@ import { Footer } from './Footer';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { content } from '../data/content';
+import ScrollToTop from '../components/ScrollToTop';
 
 interface UploadResponse {
   session_id: string;
@@ -311,6 +312,7 @@ export const OrderPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
+      <ScrollToTop />
       <Header
         isDarkMode={isDarkMode}
         language={language}

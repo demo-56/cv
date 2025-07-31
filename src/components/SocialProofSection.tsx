@@ -76,7 +76,7 @@ const SocialProofSection: React.FC<SocialProofSectionProps> = ({ content, isDark
       company: "أرامكو",
       testimonial: "جودة السير الذاتية التي نتلقاها من هذه المنصة استثنائية. التنسيق الواضح والهيكل المتوافق مع ATS يجعل عملية الفحص أكثر كفاءة.",
       imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-      linkedInUrl: "https://linkedin.com/in/sarah-al-mahmoud"
+ 
     },
     {
       name: "أحمد حسن",
@@ -84,7 +84,7 @@ const SocialProofSection: React.FC<SocialProofSectionProps> = ({ content, isDark
       company: "شركة التقنية",
       testimonial: "أخيراً وجدت خدمة تفهم السوق السعودي! الملفات الشخصية في لينكد إن التي يحسنونها تؤدي باستمرار بشكل أفضل في عمليات البحث لدينا.",
       imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-      linkedInUrl: "https://linkedin.com/in/ahmed-hassan"
+   
     },
     {
       name: "فاطمة الزهراء",
@@ -92,7 +92,7 @@ const SocialProofSection: React.FC<SocialProofSectionProps> = ({ content, isDark
       company: "STC",
       testimonial: "أنصح جميع الباحثين عن عمل بهذه المنصة. الاهتمام بالتفاصيل وفهم ما يبحث عنه أصحاب العمل أمر رائع.",
       imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-      linkedInUrl: "https://linkedin.com/in/fatima-al-zahra"
+  
     }
   ] : [
     {
@@ -101,7 +101,7 @@ const SocialProofSection: React.FC<SocialProofSectionProps> = ({ content, isDark
       company: "ARAMCO",
       testimonial: "The quality of CVs we receive from this platform is exceptional. Clear formatting and ATS-friendly structure makes our screening process much more efficient.",
       imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-      linkedInUrl: "https://linkedin.com/in/sarah-al-mahmoud"
+     
     },
     {
       name: "Ahmed Hassan",
@@ -109,7 +109,7 @@ const SocialProofSection: React.FC<SocialProofSectionProps> = ({ content, isDark
       company: "Tech Company",
       testimonial: "Finally found a service that understands the Saudi job market! The LinkedIn profiles they optimize consistently perform better in our searches.",
       imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-      linkedInUrl: "https://linkedin.com/in/ahmed-hassan"
+   
     },
     {
       name: "Fatima Al-Zahra",
@@ -117,7 +117,7 @@ const SocialProofSection: React.FC<SocialProofSectionProps> = ({ content, isDark
       company: "STC",
       testimonial: "I've been recommending this platform to all job seekers. The attention to detail and understanding of what employers look for is remarkable.",
       imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-      linkedInUrl: "https://linkedin.com/in/fatima-al-zahra"
+  
     }
   ];
 

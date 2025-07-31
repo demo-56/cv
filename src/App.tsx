@@ -6,6 +6,7 @@ import { HomePage } from './components/HomePage';
 import { OrderPage } from './components/OrderPage';
 import { PreviewPage } from './components/PreviewPage';
 import { CoverLetterPreview } from './components/CoverLetterPreview';
+import NotFound from './not-found';
 import { useTheme } from './hooks/useTheme';
 
 // Theme and Language Context Provider Component
@@ -32,8 +33,8 @@ function App() {
             <Route path="/order/:serviceType" element={<OrderPage />} />
             <Route path="/preview" element={<PreviewPage />} />
             <Route path="/cover-letter-preview" element={<CoverLetterPreview />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
-          
           <ToastContainer
             position="top-right"
             autoClose={5000}

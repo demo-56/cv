@@ -16,6 +16,9 @@ interface UploadResponse {
   classic_resume_url?: string;
   modern_resume_url?: string;
   file_name?: string;
+  cover_letter_filename?: string;
+  email?: string;
+  phone?: string;
 }
 
 interface FormData {
@@ -23,6 +26,7 @@ interface FormData {
   location: string;
   jobTitle: string;
   jobDescription: string;
+ 
 }
 
 export const OrderPage: React.FC = () => {
@@ -134,7 +138,7 @@ export const OrderPage: React.FC = () => {
   };
 
   const generateCoverLetter = async (): Promise<UploadResponse> => {
-    const API_BASE_URL = 'https://a240540ec581.ngrok-free.app';
+    const API_BASE_URL = 'https://ai.cvaluepro.com/cover';
     
     const formDataToSend = new FormData();
     const file = uploadedFiles[0];
@@ -174,7 +178,7 @@ export const OrderPage: React.FC = () => {
   };
 
   const generateResume = async (): Promise<UploadResponse> => {
-    const API_BASE_URL = 'https://a240540ec581.ngrok-free.app';
+    const API_BASE_URL = 'https://ai.cvaluepro.com/resume';
     
     // Health check first
     await axios.get(`${API_BASE_URL}/health-check`, {
@@ -235,7 +239,9 @@ export const OrderPage: React.FC = () => {
         navigate('/cover-letter-preview', {
           state: {
             session_id: responseData.session_id,
-            cover_letter_filename: responseData.file_name || responseData.filename || responseData.cover_letter_filename
+            cover_letter_filename: responseData.cover_letter_filename || responseData.file_name,
+            email: responseData.email,
+            phone: responseData.phone
           }
         });
       } else {
@@ -245,7 +251,9 @@ export const OrderPage: React.FC = () => {
           state: {
             sessionId: responseData.session_id,
             classicResumeUrl: responseData.classic_resume_url,
-            modernResumeUrl: responseData.modern_resume_url
+            modernResumeUrl: responseData.modern_resume_url,
+            email: responseData.email,
+            phone: responseData.phone
           }
         });
       }

@@ -205,7 +205,7 @@ export function CoverLetterPreview() {
       setMobileImageLoading(true);
       const fetchImage = async () => {
         try {
-          const API_BASE_URL = 'https://a240540ec581.ngrok-free.app/images';
+          const API_BASE_URL = 'https://ai.cvaluepro.com/cover/images';
           const response = await axios.post(
             API_BASE_URL,
             {
@@ -281,7 +281,7 @@ export function CoverLetterPreview() {
         setIsLoading(true);
         setError('');
         
-        const API_BASE_URL = 'https://a240540ec581.ngrok-free.app/download';
+        const API_BASE_URL = 'https://ai.cvaluepro.com/cover/download';
         
         // Encode the filename to handle special characters
         const encodedFilename = encodeURIComponent(state.cover_letter_filename);
@@ -379,9 +379,40 @@ export function CoverLetterPreview() {
 
   // fetchImages removed, now handled in downloadPdf for mobile
 
-  const handlePaymentSuccess = () => {
-    setIsPaid(true);
-    downloadPdf();
+  const handlePaymentSuccess = async () => {
+    try {
+      // Delete session after successful payment
+      const API_BASE_URL = "https://ai.cvaluepro.com/cover";
+      await axios.delete(`${API_BASE_URL}/delete-session/`, {
+        params: {
+          session_id: state.session_id
+        },
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Accept": "application/json"
+        }
+      });
+      setIsPaid(true);
+      toast.success(language === 'ar' ? 'تم الدفع بنجاح!' : 'Payment successful!');
+      
+      // Download PDF immediately after successful payment
+      if (pdfUrl && pdfBlob) {
+        const link = document.createElement('a');
+        link.href = pdfUrl.split('#')[0];
+        link.download = 'cover-letter.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Redirect to home page after a short delay
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error deleting session after payment:', error);
+      toast.error(language === 'ar' ? 'حدث خطأ بعد الدفع' : 'An error occurred after payment');
+    }
   };
 
   const handleBackClick = () => {

@@ -141,7 +141,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       }
       
       // Simulate successful payment
-      toast.success(language === 'ar' ? 'تم الدفع بنجاح!' : 'Payment successful!')
+      // toast.success(language === 'ar' ? 'تم الدفع بنجاح!' : 'Payment successful!')
       onPaymentSuccess()
       onClose()
       
@@ -527,7 +527,7 @@ export const PreviewPage: React.FC = () => {
   useEffect(() => {
     const downloadResumes = async () => {
       try {
-        const API_BASE_URL = "https://a240540ec581.ngrok-free.app"
+        const API_BASE_URL = "https://ai.cvaluepro.com/resume"
 
         // Download Classic Resume
         const classicResponse = await axios.get(
@@ -601,7 +601,7 @@ export const PreviewPage: React.FC = () => {
     const fetchImages = async () => {
       try {
         const filename = activePreview === 'classic' ? state.classicResumeUrl : state.modernResumeUrl;
-        const API_BASE_URL = "https://a240540ec581.ngrok-free.app/images";
+        const API_BASE_URL = "https://ai.cvaluepro.com/resume/images";
         const response = await axios.post(
           API_BASE_URL,
           {
@@ -665,17 +665,40 @@ export const PreviewPage: React.FC = () => {
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = () => {
-    // Always download PDF after payment, regardless of device
-    const url = selectedResumeType === 'classic' ? classicPdfUrl : modernPdfUrl;
-    const filename = `${selectedResumeType}-resume.pdf`;
-    downloadPdf(url, filename);
-    toast.success(String(language) === 'ar' ? 'تم الدفع بنجاح! جاري تحميل السيرة الذاتية...' : 'Payment successful! Downloading your resume...');
-    // Redirect to home page after successful payment and download
-    setTimeout(() => {
-      toast.success(String(language) === 'ar' ? 'شكراً لك! ستتم إعادة توجيهك إلى الصفحة الرئيسية' : 'Thank you! Redirecting to home page...');
-      navigate("/", { replace: true });
-    }, 2000);
+  const handlePaymentSuccess = async () => {
+    try {
+      // Always download PDF after payment, regardless of device
+      const url = selectedResumeType === 'classic' ? classicPdfUrl : modernPdfUrl;
+      const filename = `${selectedResumeType}-resume.pdf`;
+      downloadPdf(url, filename);
+      
+      // Delete session after successful payment
+      const API_BASE_URL = "https://ai.cvaluepro.com/resume";
+      await axios.delete(`${API_BASE_URL}/delete-session/`, {
+        params: {
+          session_id: state.sessionId
+        },
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Accept": "application/json"
+        }
+      });
+      
+      // toast.success(String(language) === 'ar' ? 'تم الدفع بنجاح! جاري تحميل السيرة الذاتية...' : 'Payment successful! Downloading your resume...');
+      
+      // Redirect to home page after successful payment and download
+      setTimeout(() => {
+        toast.success(String(language) === 'ar' ? 'شكراً لك! ستتم إعادة توجيهك إلى الصفحة الرئيسية' : 'Thank you! Redirecting to home page...');
+        navigate("/", { replace: true });
+      }, 2000);
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      // Still continue with download and navigation even if session deletion fails
+      toast.success(String(language) === 'ar' ? 'تم الدفع بنجاح! جاري تحميل السيرة الذاتية...' : 'Payment successful! Downloading your resume...');
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 2000);
+    }
   };
 
   const handleBackClick = () => {

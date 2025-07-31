@@ -474,6 +474,7 @@ export function CoverLetterPreview() {
                 isDarkMode ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'
               }`}
             >
+              
               <AlertCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-red-500" />
               <h3 className="text-lg md:text-xl font-semibold mb-2 text-red-600">
                 {String(language) === 'ar' ? 'حدث خطأ' : 'Error Occurred'}

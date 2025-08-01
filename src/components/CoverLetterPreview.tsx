@@ -4,179 +4,24 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import PaymentForm from './PaymentForm';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
-import { Loader2, Download, Eye, ArrowLeft, FileText, AlertCircle, Smartphone, Monitor, ExternalLink } from 'lucide-react';
+import { Loader2, Download, Eye, ArrowLeft, FileText, AlertCircle, ExternalLink } from 'lucide-react';
 import ScrollToTop from '../components/ScrollToTop';
-
 interface LocationState {
   session_id: string;
   cover_letter_filename: string;
 }
-
-interface PaymentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onPaymentSuccess: () => void;
-  amount: number;
-  isDarkMode: boolean;
-  language: string;
-}
-
-const PaymentModal: React.FC<PaymentModalProps> = ({
-  isOpen,
-  onClose,
-  onPaymentSuccess,
-  amount,
-  isDarkMode,
-  language
-}) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardholderName, setCardholderName] = useState('');
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
-
-  const formatExpiryDate = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
-  };
-
-  const processPayment = async () => {
-    if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
-      toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate success (in real app, this would be your payment API call)
-      toast.success(language === 'ar' ? 'تم الدفع بنجاح!' : 'Payment successful!');
-      onPaymentSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast.error(language === 'ar' ? 'فشل في الدفع. يرجى المحاولة مرة أخرى' : 'Payment failed. Please try again');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className={`relative w-full max-w-md rounded-2xl p-6 shadow-2xl ${
-        isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
-      }`}>
-        <div className="space-y-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">
-              {language === 'ar' ? 'الدفع الآمن' : 'Secure Payment'}
-            </h2>
-            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-              {language === 'ar' ? 'المبلغ:' : 'Amount:'} ${amount}
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder={language === 'ar' ? 'اسم حامل البطاقة' : 'Cardholder Name'}
-              value={cardholderName}
-              onChange={(e) => setCardholderName(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              placeholder={language === 'ar' ? 'رقم البطاقة' : 'Card Number'}
-              value={cardNumber}
-              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              maxLength={19}
-              className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder={language === 'ar' ? 'تاريخ الانتهاء' : 'MM/YY'}
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-                maxLength={5}
-                className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                placeholder="CVV"
-                value={cvv}
-                onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
-                maxLength={4}
-                className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-4 mt-6">
-            <button
-              onClick={onClose}
-              disabled={isProcessing}
-              className={`px-4 py-2 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'}`}
-            >
-              {language === 'ar' ? 'إلغاء' : 'Cancel'}
-            </button>
-            <button
-              onClick={processPayment}
-              disabled={isProcessing}
-              className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-            >
-              {isProcessing ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {language === 'ar' ? 'جاري المعالجة...' : 'Processing...'}
-                </span>
-              ) : (
-                language === 'ar' ? 'دفع' : 'Pay'
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Mobile detection utility
 const isMobileDevice = (): boolean => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
          window.innerWidth < 768;
 };
-
 // iOS detection utility  
 const isIOS = (): boolean => {
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 };
-
 export function CoverLetterPreview() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -186,19 +31,15 @@ export function CoverLetterPreview() {
   const [isLoading, setIsLoading] = useState(true);
   const [pdfUrl, setPdfUrl] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [mobileImageUrls, setMobileImageUrls] = useState<string[]>([]);
   const [mobileImageLoading, setMobileImageLoading] = useState(false);
   // Full screen image modal state
   const [fullScreenImg, setFullScreenImg] = useState<string | null>(null);
-
   useEffect(() => {
     setIsMobile(isMobileDevice());
   }, []);
-
   // Fetch image for preview (both desktop and mobile)
   useEffect(() => {
     if (state?.session_id && state?.cover_letter_filename) {
@@ -243,7 +84,6 @@ export function CoverLetterPreview() {
       setMobileImageLoading(false);
     }
   }, [state]);
-
   useEffect(() => {
     if (!state || !state.session_id || !state.cover_letter_filename) {
       console.error('Missing data:', { 
@@ -254,7 +94,6 @@ export function CoverLetterPreview() {
       navigate('/');
     }
   }, [state, navigate, language]);
-
   useEffect(() => {
     const downloadCoverLetter = async () => {
       if (!state?.session_id) {
@@ -266,7 +105,6 @@ export function CoverLetterPreview() {
         navigate('/');
         return;
       }
-
       // Better filename validation
       if (!state.cover_letter_filename || state.cover_letter_filename === 'undefined' || state.cover_letter_filename === 'null') {
         const errorMessage = language === 'ar' 
@@ -276,7 +114,6 @@ export function CoverLetterPreview() {
         toast.error(errorMessage);
         return;
       }
-
       try {
         setIsLoading(true);
         setError('');
@@ -288,7 +125,6 @@ export function CoverLetterPreview() {
         const downloadUrl = `${API_BASE_URL}?session_id=${state.session_id}&filename=${encodedFilename}`;
         
         console.log('Attempting to download from:', downloadUrl);
-
         const response = await axios.get(downloadUrl, {
           responseType: 'blob',
           headers: {
@@ -297,12 +133,10 @@ export function CoverLetterPreview() {
           },
           timeout: 30000,
         });
-
         // Check if the response is actually a PDF
         if (!response.headers['content-type'].includes('application/pdf')) {
           throw new Error('Server did not return a PDF');
         }
-
         const blob = new Blob([response.data], { type: 'application/pdf' });
         setPdfBlob(blob);
         const url = URL.createObjectURL(blob);
@@ -341,28 +175,26 @@ export function CoverLetterPreview() {
             ? 'الملف الذي تم استلامه ليس ملف PDF صالحاً' 
             : 'The received file is not a valid PDF';
         }
-
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
     };
-
     downloadCoverLetter();
-
     return () => {
       if (pdfUrl) {
         URL.revokeObjectURL(pdfUrl.split('#')[0]);
       }
     };
   }, [state, language, isMobile]);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const downloadPdf = async () => {
-    if (!isPaid) {
-      setShowPaymentModal(true);
-      return;
-    }
+    setShowPaymentForm(true);
+  };
+
+  const handlePaymentSuccess = () => {
     // Download PDF for both mobile and desktop
     if (!pdfUrl || !pdfBlob) return;
     const link = document.createElement('a');
@@ -376,55 +208,14 @@ export function CoverLetterPreview() {
       navigate('/', { replace: true });
     }, 2000);
   };
-
-  // fetchImages removed, now handled in downloadPdf for mobile
-
-  const handlePaymentSuccess = async () => {
-    try {
-      // Delete session after successful payment
-      const API_BASE_URL = "https://ai.cvaluepro.com/cover";
-      await axios.delete(`${API_BASE_URL}/delete-session/`, {
-        params: {
-          session_id: state.session_id
-        },
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-          "Accept": "application/json"
-        }
-      });
-      setIsPaid(true);
-      toast.success(language === 'ar' ? 'تم الدفع بنجاح!' : 'Payment successful!');
-      
-      // Download PDF immediately after successful payment
-      if (pdfUrl && pdfBlob) {
-        const link = document.createElement('a');
-        link.href = pdfUrl.split('#')[0];
-        link.download = 'cover-letter.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Redirect to home page after a short delay
-        setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 1500);
-      }
-    } catch (error) {
-      console.error('Error deleting session after payment:', error);
-      toast.error(language === 'ar' ? 'حدث خطأ بعد الدفع' : 'An error occurred after payment');
-    }
-  };
-
   const handleBackClick = () => {
     navigate('/', { replace: true });
   };
-
   const handleRetry = () => {
     setError('');
     setIsLoading(true);
     window.location.reload();
   };
-
   return (
     <div
       className={`min-h-screen transition-all duration-300 ${
@@ -440,8 +231,26 @@ export function CoverLetterPreview() {
         toggleDarkMode={toggleDarkMode}
         toggleLanguage={toggleLanguage}
       />
-
       <main className="container mx-auto px-4 py-8 pt-24">
+        {/* Payment Form Modal */}
+        {showPaymentForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className={`relative w-full max-w-md p-6 rounded-xl ${
+              isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
+            }`}>
+              <button
+                onClick={() => setShowPaymentForm(false)}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              <PaymentForm onSuccess={handlePaymentSuccess} />
+            </div>
+          </div>
+        )}
+        
         {/* Back Button */}
         <div className="mb-6">
           <button
@@ -456,7 +265,6 @@ export function CoverLetterPreview() {
             <span className="font-medium">{String(language) === 'ar' ? 'العودة' : 'Back'}</span>
           </button>
         </div>
-
         {/* Page Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -500,7 +308,6 @@ export function CoverLetterPreview() {
             </div>
           </div>
         )}
-
         {/* Error State */}
         {error && !isLoading && (
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -539,7 +346,6 @@ export function CoverLetterPreview() {
             </div>
           </div>
         )}
-
         {/* Image Preview (shown on both desktop and mobile) */}
         {pdfUrl && !isLoading && !error && (
           <div className="w-full max-w-xl mx-auto">
@@ -622,17 +428,6 @@ export function CoverLetterPreview() {
           </div>
         )}
       </main>
-
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onPaymentSuccess={handlePaymentSuccess}
-        amount={10}
-        isDarkMode={isDarkMode}
-        language={typeof language === 'string' ? language : 'ar'}
-      />
-
       <Footer isDarkMode={isDarkMode} language={typeof language === 'string' ? language : 'ar'} />
     </div>
   );

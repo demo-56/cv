@@ -177,6 +177,31 @@ export const OrderPage: React.FC = () => {
     return response.data;
   };
 
+  const generateLinkedIn = async (): Promise<any> => {
+    const API_BASE_URL = 'https://ai.cvaluepro.com/linkedin';
+    
+    const formDataToSend = new FormData();
+    const file = uploadedFiles[0];
+    formDataToSend.append('file', file, file.name);
+
+    const response = await axios.post(`${API_BASE_URL}/generate-linkedin`, formDataToSend, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      timeout: 60000,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(progress);
+        }
+      },
+    });
+
+    return response.data;
+  };
+
   const generateResume = async (): Promise<UploadResponse> => {
     const API_BASE_URL = 'https://ai.cvaluepro.com/resume';
     
@@ -242,6 +267,17 @@ export const OrderPage: React.FC = () => {
             cover_letter_filename: responseData.cover_letter_filename || responseData.file_name,
             email: responseData.email,
             phone: responseData.phone
+          }
+        });
+      } else if (serviceType === 'linkedin') {
+        const linkedinResponse = await generateLinkedIn();
+        
+        navigate('/linkedin-preview', {
+          state: {
+            tagLine: linkedinResponse.tag_line,
+            profileSummary: linkedinResponse.profile_summary,
+            email: linkedinResponse.email,
+            phone: linkedinResponse.phone
           }
         });
       } else {

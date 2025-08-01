@@ -6,6 +6,7 @@ import { HomePage } from './components/HomePage';
 import { OrderPage } from './components/OrderPage';
 import { PreviewPage } from './components/PreviewPage';
 import { CoverLetterPreview } from './components/CoverLetterPreview';
+import { LinkedInPreview } from './components/LinkedInPreview';
 import NotFound from './not-found';
 import { useTheme } from './hooks/useTheme';
 
@@ -33,6 +34,7 @@ function App() {
             <Route path="/order/:serviceType" element={<OrderPage />} />
             <Route path="/preview" element={<PreviewPage />} />
             <Route path="/cover-letter-preview" element={<CoverLetterPreview />} />
+            <Route path="/linkedin-preview" element={<LinkedInPreview />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <ToastContainer

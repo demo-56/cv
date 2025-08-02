@@ -123,7 +123,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, name, type = "text", pla
         onChange={handleInputValidation}
         required={required}
         placeholder={placeholder}
-        className={`w-full px-4 py-3 text-sm text-gray-900 placeholder-gray-400 border rounded-lg focus:outline-none transition-all duration-200 bg-white ${
+        className={`w-full px-4 py-3  text-sm text-gray-900 placeholder-gray-400 border rounded-lg focus:outline-none transition-all duration-200 bg-white ${
           error ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-black'
         }`}
         autoComplete={name === 'number' ? 'cc-number' : 
@@ -368,8 +368,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className=" bg-gray-5 ">
-      <div className="max-w-md w-full mx-auto space-y-8">
+    <div className=" bg-gray-50     ">
+      <div className="max-w-md w-full mx-auto space-y-8  ">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Secure Payment

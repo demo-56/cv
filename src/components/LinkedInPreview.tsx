@@ -106,13 +106,13 @@ export const LinkedInPreview: React.FC = () => {
               onClick={handleDownload}
               className='border px-3 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors'
             >
-                {language === 'ar' ? 'تحميل' : 'Download'}
+                {language === 'ar' ? 'تحميل' : 'Copy Text'}
             </button>
           </div>
           {/* Title */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 flex items-center justify-center gap-3">
-              <Linkedin className="w-8 h-8 text-blue-500" />
+              
               {language === 'ar' ? 'تحسين الملف الشخصي على لينكد إن' : 'LinkedIn Profile Optimization'}
             </h1>
           </div>

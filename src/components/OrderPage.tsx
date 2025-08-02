@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { Upload, X, FileText, CheckCircle, ArrowLeft, Briefcase, MapPin, User, FileIcon } from 'lucide-react';
+import { Upload, X, FileText, CheckCircle, Briefcase, MapPin, User, FileIcon, ArrowLeft } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { useTheme } from '../hooks/useTheme';
@@ -245,7 +245,7 @@ export const OrderPage: React.FC = () => {
       return;
     }
 
-    if (serviceType === 'cover-letter' && !validateCoverLetterForm()) {
+    if ((serviceType === 'cover-letter' || serviceType === 'bundle') && !validateCoverLetterForm()) {
       return;
     }
 
@@ -255,7 +255,66 @@ export const OrderPage: React.FC = () => {
     try {
       let responseData: UploadResponse;
 
-      if (serviceType === 'cover-letter') {
+      if (serviceType === 'bundle') {
+        // Call all generation APIs in parallel
+        const [coverLetterResponse, linkedinResponse, resumeResponse] = await Promise.all([
+          generateCoverLetter(),
+          generateLinkedIn(),
+          generateResume()
+        ]);
+
+        // Fetch preview images for cover letter and resume
+        const API_BASE_URL = 'https://ai.cvaluepro.com';
+        const [coverLetterImagesResponse, resumeImagesResponse] = await Promise.all([
+          // Fetch cover letter images
+          axios.post(`${API_BASE_URL}/cover/images`, {
+            session_id: coverLetterResponse.session_id,
+            filename: coverLetterResponse.cover_letter_filename || coverLetterResponse.file_name
+          }, {
+            headers: {
+              'ngrok-skip-browser-warning': 'true',
+              'Content-Type': 'application/json'
+            }
+          }),
+          // Fetch resume images
+          axios.post(`${API_BASE_URL}/resume/images`, {
+            session_id: resumeResponse.session_id,
+            filenames: [resumeResponse.classic_resume_url, resumeResponse.modern_resume_url]
+          }, {
+            headers: {
+              'ngrok-skip-browser-warning': 'true',
+              'Content-Type': 'application/json'
+            }
+          })
+        ]);
+
+        // Navigate to bundle preview with all responses including images
+        navigate('/bundle-preview', {
+          state: {
+            coverLetter: {
+              session_id: coverLetterResponse.session_id,
+              cover_letter_filename: coverLetterResponse.cover_letter_filename || coverLetterResponse.file_name,
+              email: coverLetterResponse.email,
+              phone: coverLetterResponse.phone,
+              previewImages: { images: coverLetterImagesResponse.data.images || [] }
+            },
+            linkedin: {
+              tagLine: linkedinResponse.tag_line,
+              profileSummary: linkedinResponse.profile_summary,
+              email: linkedinResponse.email,
+              phone: linkedinResponse.phone
+            },
+            resume: {
+              sessionId: resumeResponse.session_id,
+              classicResumeUrl: resumeResponse.classic_resume_url,
+              modernResumeUrl: resumeResponse.modern_resume_url,
+              email: resumeResponse.email,
+              phone: resumeResponse.phone,
+              previewImages: resumeImagesResponse.data
+            }
+          }
+        });
+      } else if (serviceType === 'cover-letter') {
         responseData = await generateCoverLetter();
         
         // Log the response to debug the filename issue
@@ -318,7 +377,7 @@ export const OrderPage: React.FC = () => {
           errorMessage = language === 'ar'
             ? 'البيانات المرسلة غير صحيحة. يرجى التحقق من الملف والمعلومات.'
             : 'Invalid data provided. Please check your file and information.';
-        } else if (error.response?.status >= 500) {
+        } else if (error.response?.status === 500) {
           errorMessage = language === 'ar'
             ? 'خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً.'
             : 'Server error. Please try again later.';
@@ -466,7 +525,7 @@ export const OrderPage: React.FC = () => {
           )}
 
           {/* Cover Letter Form */}
-          {serviceType === 'cover-letter' && (
+          {(serviceType === 'cover-letter' || serviceType === 'bundle') && (
             <div className={`rounded-2xl p-6 mb-8 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
               <h3 className="text-lg font-semibold mb-6 flex items-center">
                 <Briefcase className="w-5 h-5 mr-2" />

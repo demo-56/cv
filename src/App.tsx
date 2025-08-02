@@ -14,22 +14,26 @@ import { useTheme } from './hooks/useTheme';
 // Theme and Language Context Provider Component
 const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isDarkMode } = useTheme();
+  const { language } = useLanguage();
   
   // Apply theme class to body for additional styling if needed
   React.useEffect(() => {
-    document.body.className = isDarkMode ? 'dark-theme' : 'light-theme';
-  }, [isDarkMode]);
+    const themeClass = isDarkMode ? 'dark-theme' : 'light-theme';
+    const langClass = `lang-${language}`;
+    document.body.className = `${themeClass} ${langClass}`;
+  }, [isDarkMode, language]);
   
   return <>{children}</>;
 };
 
 function App() {
   const { isDarkMode } = useTheme();
+  const { language } = useLanguage();
   
   return (
     <ThemeLanguageProvider>
       <Router>
-        <div className="App">
+        <div className={`App min-h-screen transition-all duration-300 ${isDarkMode ? 'dark' : 'light'}`}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/order/:serviceType" element={<OrderPage />} />
@@ -45,7 +49,7 @@ function App() {
             hideProgressBar={false}
             newestOnTop={false}
             closeOnClick
-            rtl={false}
+            rtl={language === 'ar'}
             pauseOnFocusLoss
             draggable
             pauseOnHover
@@ -53,6 +57,7 @@ function App() {
             toastStyle={{
               backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
               color: isDarkMode ? '#ffffff' : '#000000',
+              fontFamily: language === 'ar' ? '29LT Riwaya' : 'Hagrid',
             }}
           />
         </div>

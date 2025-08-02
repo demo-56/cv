@@ -14,6 +14,7 @@ export const useLanguage = () => {
   // Apply language settings to document
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     
     // Set language attribute
     root.setAttribute('lang', language);
@@ -25,10 +26,15 @@ export const useLanguage = () => {
     root.classList.remove('lang-ar', 'lang-en');
     root.classList.add(`lang-${language}`);
     
+    // Add language class to body as well
+    body.classList.remove('lang-ar', 'lang-en');
+    body.classList.add(`lang-${language}`);
+    
     // Save to localStorage
     localStorage.setItem('language', language);
-    // ...existing code...
-    // document.title = language === 'ar' ? 'CValue - تطوير المهن' : 'CValue - Career Development';
+    
+    // Update document title based on language
+    document.title = language === 'ar' ? 'Value - تطوير المهن' : 'Value - Career Development';
 
   }, [language]);
 
@@ -43,6 +49,7 @@ export const useLanguage = () => {
   return {
     language,
     toggleLanguage,
-    setLanguageDirectly
+    setLanguageDirectly,
+    isArabic: language === 'ar'
   };
 };

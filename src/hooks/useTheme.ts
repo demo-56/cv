@@ -39,7 +39,7 @@ export const useTheme = () => {
   };
   return {
     isDarkMode,
-    toggleDarkMode
+    toggleDarkMode,
     setTheme
   };
 };
